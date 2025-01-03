@@ -1,0 +1,84 @@
+// Center the map on the region of interest
+Map.centerObject(roi);
+
+// Call the GHSL product
+var ghsl = ee.ImageCollection("JRC/GHSL/P2023A/GHS_BUILT_S")
+  .select(['built_surface'])
+  .filterBounds(roi);
+
+// Visualization
+Map.addLayer(ghsl.toBands().clip(roi), [], 'ghsl', false);
+
+// Make a single layer for bands
+var stack = ghsl.toBands();
+
+// Export the stack layer
+Export.image.toDrive({
+  image: stack.clip(roi).float(),
+  description: 'urban_stack',
+  region: roi,
+  scale: 100,
+  maxPixels: 1e13,
+  folder: 'test',
+  crs: stack.getInfo().crs
+});
+
+// Calculate the area of residential pixels for 1980
+var urban1980 = ghsl.filter(ee.Filter.eq('system:index', '1980')).toBands();
+var area1980 = ee.Number(urban1980.reduceRegion({
+  reducer: ee.Reducer.sum(),
+  geometry: roi,
+  scale: 100
+}).values().get(0));
+
+print('Residential area 1980 (km2):', area1980.divide(1e6));
+
+// Calculate the area of residential pixels for 2020
+var urban2020 = ghsl.filter(ee.Filter.eq('system:index', '2020')).toBands();
+var area2020 = ee.Number(urban2020.reduceRegion({
+  reducer: ee.Reducer.sum(),
+  geometry: roi,
+  scale: 100
+}).values().get(0));
+
+print('Residential area 2020 (km2):', area2020.divide(1e6));
+
+// Calculate the area for all years
+var ghsl2 = ghsl.map(function(img) {
+  return img.divide(1e6)
+    .copyProperties(img, img.propertyNames());
+});
+
+print(ui.Chart.image.series(ghsl2, roi, ee.Reducer.sum(), 100, 'system:time_start')
+  .setChartType('ColumnChart'));
+
+// Create a color legend for urban area changes
+var legend = ui.Panel({
+  style: {
+    position: 'bottom-left',
+    padding: '8px 15px'
+  }
+});
+
+// Add title to the legend
+legend.add(ui.Label('Urban Area Change Legend', {fontWeight: 'bold', fontSize: '16px'}));
+
+// Define colors and labels for the legend
+var colors = ['#FF0000', '#FFFF00', '#00FF00']; // Red for decrease, Yellow for no change, Green for increase
+var labels = ['Decrease', 'No Change', 'Increase'];
+
+// Create legend items
+for (var i = 0; i < colors.length; i++) {
+  var colorBox = ui.Label({
+    style: {
+      backgroundColor: colors[i],
+      padding: '8px',
+      margin: '2px'
+    }
+  });
+  var label = ui.Label(labels[i]);
+  legend.add(ui.Panel([colorBox, label], ui.Panel.Layout.Flow('horizontal')));
+}
+
+// Add the legend to the map
+Map.add(legend);
