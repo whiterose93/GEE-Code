@@ -91,6 +91,9 @@ def train_classifier(
     labels = data[config.target_property].astype(int).tolist()
     embeddings = data[list(EMBEDDING_BANDS)].to_numpy(dtype=np.float32)
     encoded_labels, label_to_index, class_order = _encode_labels(labels)
+    num_classes = len(label_to_index)
+    if num_classes == 0:
+        raise ValueError("Training data does not contain any class labels.")
 
     indices = np.arange(len(data))
     if config.validation_split > 0 and len(data) > 1:
@@ -111,9 +114,9 @@ def train_classifier(
     val_dataset = EmbeddingDataset(embeddings[val_idx], encoded_labels[val_idx]) if len(val_idx) else None
 
     device = _select_device(config.device)
-    model = build_model(config).to(device)
+    model = build_model(config, num_classes=num_classes).to(device)
 
-    class_counts = np.bincount(encoded_labels, minlength=len(class_order))
+    class_counts = np.bincount(encoded_labels, minlength=num_classes)
     class_weights = class_counts.sum() / np.maximum(class_counts, 1)
     criterion = nn.CrossEntropyLoss(weight=torch.tensor(class_weights, dtype=torch.float32, device=device))
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)

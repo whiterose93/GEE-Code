@@ -10,20 +10,32 @@ DATASET_ID = "GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL"
 EMBEDDING_BANDS: Sequence[str] = tuple(f"A{i:02d}" for i in range(64))
 
 LANDCOVER_CLASSES: Mapping[int, Mapping[str, str]] = {
-    10: {"name": "Tree cover", "color": "#006400"},
-    20: {"name": "Shrubland", "color": "#bbd16a"},
-    30: {"name": "Grassland", "color": "#d1f0a3"},
-    40: {"name": "Cropland", "color": "#f6e599"},
-    50: {"name": "Built-up", "color": "#c82606"},
-    60: {"name": "Bare", "color": "#f7c9a9"},
-    80: {"name": "Water", "color": "#0066ff"},
-    90: {"name": "Herbaceous wetland", "color": "#45c2a5"},
-    95: {"name": "Mangroves", "color": "#2ca25f"},
+    0: {"name": "Forest", "color": "#006400"},
+    1: {"name": "Mangrove", "color": "#2ca25f"},
+    2: {"name": "Built-up", "color": "#c82606"},
+    3: {"name": "Bareland", "color": "#f7c9a9"},
+    4: {"name": "Water", "color": "#0066ff"},
+    5: {"name": "Vegetation", "color": "#bbd16a"},
+    6: {"name": "Low Vegetation", "color": "#d1f0a3"},
+    7: {"name": "Forest Plantation", "color": "#45c2a5"},
+    8: {"name": "Palm Plantation", "color": "#f6e599"},
 }
 
 CLASS_NAME_TO_ID: Dict[str, int] = {
     meta["name"].lower(): class_id
     for class_id, meta in LANDCOVER_CLASSES.items()
+}
+
+SHAPEFILE_CLASS_MAP: Mapping[str, int] = {
+    "forest": 0,
+    "mangrove": 1,
+    "built": 2,
+    "bareland": 3,
+    "water": 4,
+    "vegetation": 5,
+    "low vegetation": 6,
+    "forest plantation": 7,
+    "palm plantation": 8,
 }
 
 

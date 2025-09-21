@@ -35,10 +35,14 @@ class LandcoverClassifier(nn.Module):
         return self.network(embeddings)
 
 
-def build_model(config: TrainingConfig) -> LandcoverClassifier:
+def build_model(
+    config: TrainingConfig,
+    num_classes: int | None = None,
+) -> LandcoverClassifier:
     """Instantiate a classifier from a :class:`TrainingConfig`."""
 
-    num_classes = len(LANDCOVER_CLASSES)
+    if num_classes is None:
+        num_classes = len(LANDCOVER_CLASSES)
     return LandcoverClassifier(
         hidden_dims=config.hidden_dims,
         num_classes=num_classes,

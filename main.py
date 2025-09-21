@@ -28,7 +28,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--shapefile-dir",
         type=Path,
         default=Path("shp"),
-        help="Directory that contains input shapefiles.",
+        help=(
+            "Root directory yang memuat subfolder 'picker' (training) dan 'location'"
+            " (AOI inference)."
+        ),
     )
     parser.add_argument(
         "--data-dir",

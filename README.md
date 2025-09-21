@@ -9,24 +9,26 @@ GEE-Code/
 ├── main.py                     # Entry point pipeline
 ├── requirements.txt            # Dependensi Python
 ├── src/gee_landcover_pipeline/ # Modul utilitas pipeline
-└── shp/                        # Letakkan shapefile di sini
+└── shp/
+    ├── picker/                # Shapefile training, satu kelas per berkas
+    └── location/              # Shapefile area of interest untuk inferensi
 ```
 
-> **Catatan:** Berkas shapefile untuk training harus memiliki kolom atribut `class_id` (atau nama kolom yang ditetapkan melalui argumen `--target-property`) yang memuat kode kelas sesuai daftar berikut:
+> **Catatan:** Tiap shapefile pada folder `shp/picker/` merepresentasikan satu kelas. Nama berkas (tanpa ekstensi) dipetakan otomatis ke kode kelas berikut dan disisipkan sebagai kolom `class_id` serta `class_name` saat proses unduh sampel dijalankan:
 >
-> | Kode | Kelas                |
-> |-----:|----------------------|
-> | 10   | Tree cover           |
-> | 20   | Shrubland            |
-> | 30   | Grassland            |
-> | 40   | Cropland             |
-> | 50   | Built-up             |
-> | 60   | Bare                 |
-> | 80   | Water                |
-> | 90   | Herbaceous wetland   |
-> | 95   | Mangroves            |
+> | Kode | Nama shapefile      | Kelas output         |
+> |-----:|---------------------|----------------------|
+> | 0    | `forest`            | Forest               |
+> | 1    | `mangrove`          | Mangrove             |
+> | 2    | `built`             | Built-up             |
+> | 3    | `bareland`          | Bareland             |
+> | 4    | `water`             | Water                |
+> | 5    | `vegetation`        | Vegetation           |
+> | 6    | `low vegetation`    | Low Vegetation       |
+> | 7    | `forest plantation` | Forest Plantation    |
+> | 8    | `palm plantation`   | Palm Plantation      |
 >
-> Shapefile inference (tanpa label) cukup berisi geometri area of interest.
+> Jika struktur nama berbeda, perbarui pemetaan pada konstanta `SHAPEFILE_CLASS_MAP` di `src/gee_landcover_pipeline/config.py`. Shapefile inferensi pada folder `shp/location/` cukup berisi geometri area of interest.
 
 ## Persiapan lingkungan
 
@@ -37,15 +39,11 @@ GEE-Code/
    pip install -r requirements.txt
    ```
 
-3. Autentikasi Google Earth Engine:
-
-   ```bash
-   earthengine authenticate
-   ```
+3. Salin file kunci service account Google Earth Engine (`ee-faizfajrice-f9b66d6b94e8.json`) ke direktori `key/` pada root proyek. Nama file dan akun layanan harus cocok dengan nilai bawaan pada `initialize_earth_engine()` atau disesuaikan melalui parameter fungsi tersebut.
 
 ## Menjalankan pipeline
 
-Letakkan semua shapefile pada direktori `shp/`. Setelah dependensi terpasang dan autentikasi Earth Engine selesai, jalankan:
+Letakkan shapefile training ke dalam `shp/picker/` dan shapefile area of interest (tanpa label) pada `shp/location/`. Setelah dependensi terpasang dan kredensial Earth Engine tersedia, jalankan:
 
 ```bash
 python main.py --shapefile-dir shp
